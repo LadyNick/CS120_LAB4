@@ -99,12 +99,12 @@ void Tick_Count(){
 			PORTC = 0x07;
 			break;
 		case inc_p:
-			if(PORTC != 0x07){
+			if((PORTC < 0x07)){
 				PORTC = PORTC + 1;
 			}
 			break;
 		case dec_p:
-			if(PORTC != 0x00){
+			if((PORTC > 0)){
 				PORTC = PORTC - 1;
 			}
 			break;
