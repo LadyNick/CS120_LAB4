@@ -17,18 +17,18 @@ enum count_states{init, inc_p, inc_r, dec_p, dec_r, reset_p, reset_r, release} c
 void Tick_Count(){
 	switch (count_state){
 		case init:
-			if( PA0 && !PA1 ){
+			if(((PINA & 0x01) > 0) && !((PINA & 0x02) > 0) ){
 				count_state = inc_p;
 			}
-			else if( !PA0 && PA1){
+			else if( !((PINA & 0x01) > 0) && ((PINA & 0x02) > 0)){
 				count_state = dec_p;
 			}
-			else if( PAO && PA1 ){
+			else if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
 				count_state = reset;
 			}
 			break;
 		case inc_p:
-			if( PA0 && PA1 ){
+			if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
 				count_state = reset;
 			}
 			else{
@@ -36,18 +36,18 @@ void Tick_Count(){
 			}
 			break;
 		case inc_r: 
-			if( PA0 && PA1 ){
+			if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
 				count_state = reset;
 			}
-			else if( PA0){
+			else if((PINA & 0x01) > 0){
 				count_state = inc_r;
 			}
-			else if( !PA0){
+			else if( !((PINA & 0x01) > 0)){
 				count_state = release;
 			}
 			break;
 		case dec_p:
-			if( PA0 && PA1 ) {
+			if( ((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ) {
 				count_state = reset;
 			}
 			else{
@@ -55,20 +55,20 @@ void Tick_Count(){
 			}
 			break;
 		case dec_r:
-			if( PA0 && PA1 ){
+			if(((PINA & 0x01) > 0) &&((PINA & 0x02) > 0) ){
 				count_state = reset;
 			}
-			else if( PA1 ){
+			else if((PINA & 0x02) > 0 ){
 				count_state = dec_r;
 			}
-			else if( !PA1 ){
+			else if( !((PINA & 0x02) > 0) ){
 				count_state = release;
 			}
 		case reset_p:
 			count_state = reset_r;
 			break;
 		case reset_r:
-			if( !PA0 && !PA1 ){
+			if( !((PINA & 0x01) > 0) && !((PINA & 0x02) > 0) ){
 				count_state = release;
 			}
 			else{
@@ -76,13 +76,13 @@ void Tick_Count(){
 			}
 			break;
 		case release:
-			if( PA0 && !PA1 ){
+			if( ((PINA & 0x01) > 0) && !((PINA & 0x02) > 0) ){
                                 count_state = inc_p;
                         }
-                        else if( !PA0 && PA1){
+                        else if( !((PINA & 0x01) > 0) && ((PINA & 0x02) > 0)){
                                 count_state = dec_p;
                         }
-                        else if( PAO && PA1 ){
+                        else if( ((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
                                 count_state = reset;
                         }
                         break;
