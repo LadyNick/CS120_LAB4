@@ -86,13 +86,12 @@ void Tick_Lock(){
 
 	switch(lock_state){
 		case unlocky_p:
-			PORTB == 0x00;
-			/*if(PORTB == 0x00){
+			if(PORTB == 0x00){
 				PORTB = 0x01;
 			}
 			if(PORTB == 0x01){
 				PORTB = 0x00;
-			}*/
+			}
 			break;
 		default:
 			break;
