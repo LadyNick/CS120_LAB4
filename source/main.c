@@ -12,121 +12,104 @@
 #include "simAVRHeader.h"
 #endif
 
-enum count_states{init, inc_p, inc_r, dec_p, dec_r, reset_p, reset_r, release} count_state;
+enum lock_states{start = 1, button = 2, hash_p = 3, hash_r = 4, unlocky_p = 5, unlocky_r = 6} lock_state;
 
-
-
-void Tick_Count(){
-	switch (count_state){
-		case init:
-			if(((PINA & 0x01) > 0) && !((PINA & 0x02) > 0) ){
-				count_state = inc_p;
-			}
-			else if( !((PINA & 0x01) > 0) && ((PINA & 0x02) > 0)){
-				count_state = dec_p;
-			}
-			else if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
-				count_state = reset_p;
-			}
+void Tick_Lock(){
+	
+	switch(lock_state){
+		case start:
+			PORTB = 0x00;
+			lock_state = button;
 			break;
-		case inc_p:
-			if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
-				count_state = reset_p;
+		case button:
+			if(PINA == 0x80){
+				PORTB = 0x00;
+			}
+			if(PINA == 0x04){
+				lock_state = hash_p;
 			}
 			else{
-				count_state = inc_r;
+				lock_state = button;
 			}
 			break;
-		case inc_r: 
-			if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
-				count_state = reset_p;
+		case hash_p:
+			if(PINA == 0x04){
+				lock_state = hash_p;
 			}
-			else if((PINA & 0x01) > 0){
-				count_state = inc_r;
-			}
-			else if( !((PINA & 0x01) > 0)){
-				count_state = release;
-			}
-			break;
-		case dec_p:
-			if( ((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ) {
-				count_state = reset_p;
+			else if(PINA == 0x00){
+				lock_state = hash_r;
 			}
 			else{
-				count_state = dec_r;
+				lock_state = button;
 			}
 			break;
-		case dec_r:
-			if(((PINA & 0x01) > 0) &&((PINA & 0x02) > 0) ){
-				count_state = reset_p;
+		case hash_r:
+			if(PINA == 0x80){
+                                PORTB = 0x00;
+				lock_state = button;
+                        }
+			if(PINA == 0x02){
+				lock_state = unlocky_p;
 			}
-			else if((PINA & 0x02) > 0 ){
-				count_state = dec_r;
+			else if( PINA == 0x00){
+				lock_state = hash_r;
 			}
-			else if( !((PINA & 0x02) > 0) ){
-				count_state = release;
-			}
-		case reset_p:
-			count_state = reset_r;
-			break;
-		case reset_r:
-			if( !((PINA & 0x01) > 0) && !((PINA & 0x02) > 0) ){
-				count_state = release;
+			else if( PINA == 0x04){
+				lock_state = hash_p;
 			}
 			else{
-				count_state = reset_r;
+				lock_state = button;
 			}
 			break;
-		case release:
-			if( ((PINA & 0x01) > 0) && !((PINA & 0x02) > 0) ){
-                                count_state = inc_p;
+		case unlocky_p:
+			if(PINA == 0x00){
+				lock_state = unlocky_r;
+			}
+			else if(PINA == 0x02){
+				lock_state = unlocky_p;
+			}
+			else{
+				lock_state = button;
+			}
+			break;
+		case unlocky_r:
+			if(PINA == 0x80){
+                                PORTB = 0x00;
+				lock_state = button;
                         }
-                        else if( !((PINA & 0x01) > 0) && ((PINA & 0x02) > 0)){
-                                count_state = dec_p;
-                        }
-                        else if( ((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
-                                count_state = reset_p;
-                        }
-                        break;
+			lock_state = button;
+			break;
 		default:
-			count_state = init;
+			lock_state = start;
+			break;
 	}
 
-	switch (count_state){
+	switch(lock_state){
+		case unlocky_p:
+			PORTB = 0x01;
+			break;
 		default:
 			break;
-		case init:
-			PORTC = 0x07;
-			break;
-		case inc_p:
-			if((PORTC < 0x07)){
-				PORTC = PORTC + 1;
-			}
-			break;
-		case dec_p:
-			if((PORTC > 0)){
-				PORTC = PORTC - 1;
-			}
-			break;
-		case reset_p:
-			PORTC = 0x00;
-			break;
+	
 	}
+
 }
 
 
 
 int main(void) {
     /* Insert DDR and PORT initializations */
+	DDRB = 0xFF; PORTB = 0x00;
 	DDRC = 0xFF; PORTC = 0x00;
 	DDRA = 0x00; PINA = 0xFF;
 
     /* Insert your solution below */
 
-	count_state = init;
+	lock_state = start;
 
     while (1){
-	Tick_Count();
+	PORTC = lock_state;
+	TickLock();
     }
     return 1;
 }
