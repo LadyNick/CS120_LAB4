@@ -14,9 +14,12 @@
 
 enum count_states{init, inc_p, inc_r, dec_p, dec_r, reset_p, reset_r, release} count_state;
 
+
+
 void Tick_Count(){
 	switch (count_state){
 		case init:
+			PORTC = 0x07;
 			if(((PINA & 0x01) > 0) && !((PINA & 0x02) > 0) ){
 				count_state = inc_p;
 			}
@@ -24,12 +27,12 @@ void Tick_Count(){
 				count_state = dec_p;
 			}
 			else if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
-				count_state = reset;
+				count_state = reset_p;
 			}
 			break;
 		case inc_p:
 			if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
-				count_state = reset;
+				count_state = reset_p;
 			}
 			else{
 				count_state = inc_r;
@@ -37,7 +40,7 @@ void Tick_Count(){
 			break;
 		case inc_r: 
 			if(((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
-				count_state = reset;
+				count_state = reset_p;
 			}
 			else if((PINA & 0x01) > 0){
 				count_state = inc_r;
@@ -48,7 +51,7 @@ void Tick_Count(){
 			break;
 		case dec_p:
 			if( ((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ) {
-				count_state = reset;
+				count_state = reset_p;
 			}
 			else{
 				count_state = dec_r;
@@ -56,7 +59,7 @@ void Tick_Count(){
 			break;
 		case dec_r:
 			if(((PINA & 0x01) > 0) &&((PINA & 0x02) > 0) ){
-				count_state = reset;
+				count_state = reset_p;
 			}
 			else if((PINA & 0x02) > 0 ){
 				count_state = dec_r;
@@ -83,7 +86,7 @@ void Tick_Count(){
                                 count_state = dec_p;
                         }
                         else if( ((PINA & 0x01) > 0) && ((PINA & 0x02) > 0) ){
-                                count_state = reset;
+                                count_state = reset_p;
                         }
                         break;
 		default:
@@ -106,7 +109,7 @@ void Tick_Count(){
 				PORTC = PORTC - 1;
 			}
 			break;
-		case reset:
+		case reset_p:
 			PORTC = 0x00;
 			break;
 	}
@@ -120,7 +123,7 @@ int main(void) {
 	DDRA = 0x00; PINA = 0xFF;
 
     /* Insert your solution below */
-	PORTC = 0x07;
+
 	count_state = init;
 
     while (1){

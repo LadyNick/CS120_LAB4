@@ -14,21 +14,25 @@
 # An example set of tests is shown below. It is important to note that these tests are not "unit tests" in 
 # that they are not ran in isolation but in the order shown and the state of the device is not reset or 
 # altered in between executions (unless preconditions are used).
-tests = [ {'description': 'Start State, PB0 on PB1 off',
+tests = [ {'description': 'Reset from start',
     'steps': [ {'inputs': [('PINA',0x00)], 'iterations': 1 } ],
-    'expected': [('PORTB', 0x01)],
+    'expected': [('PORTC', 0x00)],
     },
-    {'description': 'Start State + press, with release, + press without release',
-    'steps': [ {'inputs': [('PINA', 0x00)],'iterations': 1}, # Set PIN to val then run one iteration
-        {'inputs': [('PINA',0x01)], 'time': 300 }, # Set PIN to val then run 300 ms
-        {'inputs': [('PINA',0x00)], 'iterations': 1, 'expected': [('PORTB', 0x02)]}, 
-        {'inputs': [('PINA',0x01)], 'time': 600}, ],
-    'expected': [('PORTB', 0x01)],
+    {'description': 'Start State + increment + increment  ',
+    'steps': [ {'inputs': [('PINA', 0x01)],'iterations': 1}, # Set PIN to val then run one iteration
+        {'inputs': [('PINA',0x00)], 'iterations': 1 }, # Set PIN to val then run 300 ms
+        {'inputs': [('PINA',0x01)], 'iterations': 1, 'expected': [('PORTC', 0x09)]}, 
+        {'inputs': [('PINA',0x00)], 'iterations': 1}, ],
+    'expected': [('PORTC', 0x09)],
+    },
+    {'description': 'Start',
+    'steps': [ {'inputs': [('PINA',0x00)], 'time': 300 } ],
+    'expected': [('PORTC', 0x07)],
     },
     ]
 
 # Optionally you can add a set of "watch" variables these need to be global or static and may need
 # to be scoped at the function level (for static variables) if there are naming conflicts. The 
 # variables listed here will display everytime you hit (and stop at) a breakpoint
-watch = ['PORTB']
+watch = ['PORTC']
 
