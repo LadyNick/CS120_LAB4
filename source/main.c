@@ -12,64 +12,102 @@
 #include "simAVRHeader.h"
 #endif
 
-enum LED_states{LED_start, on_off, off_on, change_1, change_2} LED_state;
+enum count_states{init, inc_p, inc_r, dec_p, dec_r, reset_p, reset_r, release} count_state;
 
-void Tick_LED(){
-	switch (LED_state){
-		case LED_start:
-			LED_state = on_off;
+void Tick_Count(){
+	switch (count_state){
+		case init:
+			if( PA0 && !PA1 ){
+				count_state = inc_p;
+			}
+			else if( !PA0 && PA1){
+				count_state = dec_p;
+			}
+			else if( PAO && PA1 ){
+				count_state = reset;
+			}
 			break;
-		case on_off:
-			if((PINA & 0x01) > 0){
-				LED_state = change_1;
+		case inc_p:
+			if( PA0 && PA1 ){
+				count_state = reset;
 			}
 			else{
-				LED_state = on_off;
+				count_state = inc_r;
 			}
 			break;
-		case off_on:
-			if((PINA & 0x01) > 0){
-				LED_state = change_2;
+		case inc_r: 
+			if( PA0 && PA1 ){
+				count_state = reset;
 			}
-			else{
-				LED_state = off_on;
+			else if( PA0){
+				count_state = inc_r;
 			}
-			break;
-		case change_1:
-			if((PINA & 0x01) > 0){
-				LED_state = change_1;
-			}
-			else{
-				LED_state = off_on;
+			else if( !PA0){
+				count_state = release;
 			}
 			break;
-		case change_2: 
-			if((PINA & 0x01) > 0){
-				LED_state = change_2;
+		case dec_p:
+			if( PA0 && PA1 ) {
+				count_state = reset;
 			}
 			else{
-				LED_state = on_off;
+				count_state = dec_r;
 			}
 			break;
-		default:
-			LED_state = LED_start;
+		case dec_r:
+			if( PA0 && PA1 ){
+				count_state = reset;
+			}
+			else if( PA1 ){
+				count_state = dec_r;
+			}
+			else if( !PA1 ){
+				count_state = release;
+			}
+		case reset_p:
+			count_state = reset_r;
 			break;
-	}
-
-	switch (LED_state){
-		case LED_start:
-			PORTB = PORTB | (0x01);
-			PORTB = PORTB & ~(0x01 << 1);
+		case reset_r:
+			if( !PA0 && !PA1 ){
+				count_state = release;
+			}
+			else{
+				count_state = reset_r;
+			}
 			break;
-		case change_1:
-			PORTB = PORTB & ~(0x01);
-			PORTB = PORTB | (0x01 << 1);
-			break;
-		case change_2:
-			PORTB = PORTB | (0x01);
-                        PORTB = PORTB & ~(0x01 << 1);
+		case release:
+			if( PA0 && !PA1 ){
+                                count_state = inc_p;
+                        }
+                        else if( !PA0 && PA1){
+                                count_state = dec_p;
+                        }
+                        else if( PAO && PA1 ){
+                                count_state = reset;
+                        }
                         break;
 		default:
+			count_state = init;
+	}
+
+	switch (count_state){
+		default:
+			break;
+		case init:
+			PORTC = 0x07;
+			break;
+		case inc_p:
+			if(PORTC != 0x07){
+				PORTC = PORTC + 1;
+			}
+			break;
+		case dec_p:
+			if(PORTC != 0x00){
+				PORTC = PORTC - 1;
+			}
+			break;
+		case reset:
+			PORTC = 0x00;
 			break;
 	}
 }
@@ -78,20 +116,15 @@ void Tick_LED(){
 
 int main(void) {
     /* Insert DDR and PORT initializations */
-	DDRB = 0xFF; PORTB = 0x00;
+	DDRC = 0xFF; PORTC = 0x00;
 	DDRA = 0x00; PINA = 0xFF;
-	
-
-    //every PA0 is represented by (PINA & 0x01) > 0; 
-    //every PB0 is represented by PORTB = PORTB | (0x01 << 0) for on, PORTB = PORTB & ~(0x01 << 0) for off
-    //every PB1 is represented by PORTB = PORTB | (0x01 << 1) for on, PORTB = PORTB & ~(0x01 << 1) for off	
 
     /* Insert your solution below */
-	PORTB = 0x01;
-	LED_state = LED_start;
+	PORTC = 0x07;
+	count_state = init;
 
     while (1){
-	Tick_LED();
+	Tick_Count();
     }
     return 1;
 }
