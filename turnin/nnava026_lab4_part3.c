@@ -109,7 +109,7 @@ int main(void) {
 
     while (1){
 	PORTC = lock_state;
-	TickLock();
+	Tick_Lock();
     }
     return 1;
 }
