@@ -19,5 +19,20 @@
 # Optionally you can add a set of "watch" variables these need to be global or static and may need
 # to be scoped at the function level (for static variables) if there are naming conflicts. The 
 # variables listed here will display everytime you hit (and stop at) a breakpoint
-watch = ['PORTC']
+
+tests = [ {'description': 'Start',
+    'steps': [ {'inputs': [('PINA',0x00)], 'iterations': 1 } ],
+    'expected': [('PORTB', 0x00)],
+    },
+    {'description': 'Test for Unlocking',
+    'steps': [ {'inputs': [('PINA', 0x04)],'iterations': 1}, # Set PIN to val then run one iteration
+        {'inputs': [('PINA', 0x00)], 'iterations': 1 }, # Set PIN to val then run 300 ms
+        {'inputs': [('PINA',0x02)], 'iterations': 1, 'expected': [('PORTB',0x01)]},
+        {'inputs': [('PINA',0x00)], 'iterations': 1}, ],
+    'expected': [('PORTB',0x01)],
+    },
+    ]
+
+
+watch = ['PORTB']
 
